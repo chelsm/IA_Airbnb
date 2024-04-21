@@ -52,7 +52,8 @@ class TrainingData(BaseModel):
     bed_type: int
     cancellation_policy: str
     cleaning_fee: bool
-    city: int
+    name: str
+    city: str
     host_identity_verified: bool
     number_of_reviews: int
     review_scores_rating: int
