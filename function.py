@@ -1,6 +1,7 @@
 
 import os
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
 
@@ -36,3 +37,8 @@ def predict(model, df):
     X_pred = df[['property_type', 'room_type', 'accommodates', 'bathrooms', 'bedrooms', 'beds']].values.tolist()
     predictions = model.predict(X_pred)
     return predictions.tolist()
+
+
+def calculate_mse(actual, predicted):
+    mse = mean_squared_error(actual, predicted)
+    return mse

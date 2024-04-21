@@ -7,7 +7,7 @@ from openai import OpenAI
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import pandas as pd
-from function import train_model, get_last_model, predict
+from function import calculate_mse, train_model, get_last_model, predict
 
 client = OpenAI(
   organization='org-0CmOzjMuVo2WWrKtcHmU8BSf',
@@ -91,8 +91,12 @@ def predict_endpoint(file_path: str):
         model_path = get_last_model()
         with open(model_path, 'rb') as model_file:
             model = pickle.load(model_file)
-        prediction = predict(model, df)
-        return {"prediction": prediction}
+        predictions = predict(model, df)
+        
+        actual_values = df['log_price'].tolist() 
+        mse = calculate_mse(actual_values, predictions)
+        
+        return {"prediction": predictions, "mse": mse}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
