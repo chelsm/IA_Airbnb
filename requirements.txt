@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+tensorflow==2.15.0
+openai
+pandas
+sklearn
+pydantic
