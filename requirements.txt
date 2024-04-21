@@ -3,5 +3,5 @@ uvicorn
 tensorflow==2.15.0
 openai
 pandas
-sklearn
+scikit-learn
 pydantic

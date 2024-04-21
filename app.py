@@ -1,12 +1,18 @@
+import os
+import pickle
+import tempfile
+import requests
 import streamlit as st
 import pandas as pd
+
+from api import train_model_endpoint, get_model, predict_endpoint
 
 has_data_clean = False
 
 def set_page_config():
     st.set_page_config(
         page_title="Streamlit Airbnb App",
-        page_icon=":home:",
+        page_icon="https://cdn-icons-png.flaticon.com/512/2111/2111320.png",
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -41,6 +47,25 @@ def inverse_categorical(df, column):
     mapping = {str(i): value for i, value in enumerate(original_values)}
     return mapping
 
+def train_model():
+    uploaded_file = st.file_uploader("Upload CSV file", type=['csv'])
+
+    if uploaded_file is not None:
+        try:
+            cwd = os.getcwd()
+            file_path = os.path.join(cwd, uploaded_file.name)
+
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getvalue())
+            print('Uploaded file', file_path)
+            response = requests.post("http://localhost:8000/training", data={"file_path": file_path})
+            if response.status_code == 200:
+                st.success("Model trained successfully and saved.")
+            else:
+                st.error("An error occurred while training the model.")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
 def main():
     set_page_config()
     st.title("Airbnb App")
@@ -59,25 +84,13 @@ def main():
             
             st.write('------------------------------------------------------------------------------------------------------------------')
 
-            st.subheader("Get Airbnb Listings from API")
+            st.subheader("Train Model")
 
-            city = st.text_input("Enter a city name:", "NYC")
-            submit = st.button("Search")
+            train_model()
+               
 
-            if submit:
-                filtered_data = data_clean_csv[data_clean_csv['city'] == city]
-                if not filtered_data.empty:
-                    st.write("**Here are the top 10 listings:**")
-                    for index, row in filtered_data.head(10).iterrows():
-                        property_type = inverse_categorical(data_csv, 'property_type').get(str(row['property_type']), 'Unknown')
-                        name = row['name']
-                        price = row['log_price']
-                        currency = '$'
-                        st.write(f"**Name:** {name}")
-                        st.write(f"- Type: {property_type}")
-                        st.write(f"- Price: {price} {currency}")
-                else:
-                    st.write("No listings found for the specified city.")
+
+           
         else:
             st.write("No data available.")
     except FileNotFoundError:

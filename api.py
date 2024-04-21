@@ -1,3 +1,4 @@
+import io
 import os
 import pickle
 import uuid
@@ -16,20 +17,16 @@ client = OpenAI(
 
 tags_metadata = [
     {
-        "name": "City",
-        "description": "Operations with city data.",
-    },
-    {
         "name": "Training",
         "description": "Operations with training data.",
     },
     {
         "name": "Predict",
-        "description": "Operations with prediction data.",
+        "description": "Operations with models.",
     },
     {
         "name": "Models",
-        "description": "Operations with models.",
+        "description": "Call to Open IA API.",
     }
 ]
 
@@ -102,7 +99,7 @@ def predict_endpoint(file_path: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/model", tags=["Model"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
+@app.get("/model", tags=["Models"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
 def get_model(prompt: str):
     try:
         response = client.completions.create(
