@@ -11,5 +11,16 @@
         "src": "/(.*)",
         "dest": "api.py"
       }
-    ]
+    ],
+    "build": {
+      "env": {
+        "PYTHON_VERSION": "3.9.7"
+      },
+      "functions": {
+        "api": {
+          "runtime": "python3.9"
+        }
+      }
+    }
   }
+  
