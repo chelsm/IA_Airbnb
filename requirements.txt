@@ -1,7 +1,8 @@
 fastapi
 uvicorn
-tensorflow==2.15.0
+tensorflow
 openai
 pandas
 scikit-learn
 pydantic
+streamlit

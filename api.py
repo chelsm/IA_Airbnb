@@ -64,8 +64,12 @@ class PredictionData(BaseModel):
     bedrooms: int
     beds: int
 
+@app.get("/", tags=["Home"])
+def read_root():
+    return {"message": "Welcome to the Airbnb Price Prediction API!"}
 
-@app.post("/training", tags=["Training"], summary="Entraîner le modèle", description="Endpoint pour entraîner un modèle de machine learning.")
+
+@app.post("/training", tags=["Training"], summary="Train the model", description="Endpoint to train a machine learning model.")
 def train_model_endpoint(file_path: str): 
     try:
         df = pd.read_csv(file_path)
@@ -80,8 +84,7 @@ def train_model_endpoint(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.post("/predict", tags=["Predict"], summary="Faire une prédiction", description="Endpoint pour faire une prédiction à partir du modèle entraîné.")
+@app.post("/predict", tags=["Predict"], summary="Make a prediction", description="Endpoint to make a prediction using the trained model.")
 def predict_endpoint(file_path: str):
     try:
         df = pd.read_csv(file_path)
@@ -99,24 +102,21 @@ def predict_endpoint(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     data = request.json  # Attend les données JSON avec les mêmes caractéristiques que le modèle attend
-#     # Préparer les données pour la prédiction
-#     features = [[
-#         data['property_type'],
-#         data['room_type'],
-#         data['accommodates'],
-#         data['bathrooms'],
-#         data['bedrooms'],
-#         data['beds']
-#     ]]
-#     # Faire la prédiction
-#     prediction = model.predict(features)
-#     # Retourner la prédiction
-#     return jsonify({'predicted_price': prediction[0]})
+@app.post("/predict-json", tags=["Predict"], summary="Make a prediction", description="Endpoint to make a prediction using the trained model.")
+def predict_endpoint(data: PredictionData):
+    try:
+        df = pd.DataFrame([data.dict()])
+        model_path = get_last_model()
+        with open(model_path, 'rb') as model_file:
+            model = pickle.load(model_file)
 
-@app.get("/model", tags=["Models"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
+        predictions = predict(model, df)
+        
+        return {"predicted_prices": predictions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/model", tags=["Models"], summary="Get an AI model", description="Endpoint to retrieve an AI model from the OpenAI API.")
 def get_model(prompt: str):
     try:
         completion = client.chat.completions.create(
