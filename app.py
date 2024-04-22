@@ -37,29 +37,11 @@ def display_data(data, title):
             st.write(f"Descriptive statistics for {title}:")
             st.write(data.describe())
 
-def inverse_categorical(df, column):
+def inverse_categorical(column):
+    df = pd.read_csv("data.csv")
     original_values = df[column].unique()
     mapping = {str(i): value for i, value in enumerate(original_values)}
     return mapping
-
-def train_model():
-    uploaded_file = st.file_uploader("Upload CSV file", type=['csv'])
-
-    if uploaded_file is not None:
-        try:
-            cwd = os.getcwd()
-            file_path = os.path.join(cwd, uploaded_file.name)
-
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getvalue())
-            print('Uploaded file', file_path)
-            response = requests.post("http://localhost:8000/training", data={"file_path": file_path})
-            if response.status_code == 200:
-                st.success("Model trained successfully and saved.")
-            else:
-                st.error("An error occurred while training the model.")
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
 
 def get_key_from_value(dictionary, value):
     for key, val in dictionary.items():
@@ -68,11 +50,12 @@ def get_key_from_value(dictionary, value):
     return None  
 
 def train_model_json():
-    st.write("Train model using JSON data")
-    data_df = pd.read_csv("data.csv")
+    data_df = pd.read_csv("data_clean.csv")
     
-    property_types_mapping = inverse_categorical(data_df, "property_type")
-    room_types_mapping = inverse_categorical(data_df, "room_type")
+    property_types_mapping = inverse_categorical("property_type")
+    room_types_mapping = inverse_categorical("room_type")
+
+    print('property_types_mapping', property_types_mapping)
 
     property_types = list(property_types_mapping.values())
     room_types = list(room_types_mapping.values())
@@ -100,11 +83,14 @@ def train_model_json():
         "beds": beds,
     }
 
-    response = requests.post("http://localhost:8000/predict-json", json=data)
-    if response.status_code == 200:
-        st.success("Model trained successfully and saved.")
-    else:
-        st.error("An error occurred while training the model.")
+    
+    if st.button("Train Model"):
+        response = requests.post("http://localhost:8000/predict-json", json=data)
+        if response.status_code == 200:
+            st.success("Model trained successfully and saved.")
+            st.write("Predicted prices:", response.json()["predicted_prices"])
+        else:
+            st.error("An error occurred while training the model.")
 
 
 def home_page():
@@ -114,12 +100,6 @@ def home_page():
         data_clean_csv = load_data("data_clean.csv")
         if data_clean_csv is not None and not data_clean_csv.empty:
             display_data(data_clean_csv, "Clean Airbnb Data")
-            st.write('------------------------------------------------------------------------------------------------------------------')
-            st.subheader("Train Model")
-            # train_model()
-            train_model_json()
-
-           
         else:
             st.write("No data available.")
     except FileNotFoundError:
@@ -132,6 +112,12 @@ def swagger_page():
     st.write("Swagger documentation:")
     st.components.v1.iframe("http://localhost:8000/docs", height=1000, scrolling=True)
 
+def predict_page():
+    st.write('------------------------------------------------------------------------------------------------------------------')
+    st.subheader("Predict Prices")
+    st.write("Predict prices using the trained model & JSON data.")
+    train_model_json()
+
 
 def main():
     set_page_config()
@@ -139,12 +125,14 @@ def main():
     st.write("This is a app that predicts prices using the Airbnb API.")
 
     st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", ["Home", "Swagger Documentation"])
+    selection = st.sidebar.radio("Go to", ["Home", "Swagger Documentation", "Predict Prices"])
 
     if selection == "Home":
         home_page()
     elif selection == "Swagger Documentation":
         swagger_page()
+    elif selection == "Predict Prices":
+        predict_page()
 
 
 
