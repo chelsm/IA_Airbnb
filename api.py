@@ -1,4 +1,3 @@
-import io
 import os
 import pickle
 import uuid
@@ -10,9 +9,7 @@ import pandas as pd
 from function import calculate_mse, train_model, get_last_model, predict
 
 client = OpenAI(
-  organization='org-0CmOzjMuVo2WWrKtcHmU8BSf',
-  project='proj_MB8lPmmfaHr67ptQs2BPkOU8',
-  api_key= "sk-proj-6FFJRqZbaGA5b2CTM2ZTT3BlbkFJSXUDFKwliJfkvLo5NrjV    "
+    api_key="sk-proj-YTmJg1pIAgUQpoPAWHpST3BlbkFJodX2M41av2Ib6lO9yAGI",
 )
 
 tags_metadata = [
@@ -96,27 +93,45 @@ def predict_endpoint(file_path: str):
         actual_values = df['log_price'].tolist() 
         mse = calculate_mse(actual_values, predictions)
         
-        return {"prediction": predictions, "mse": mse}
+        return {"predicted prices": predictions, "mse": mse}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     data = request.json  # Attend les données JSON avec les mêmes caractéristiques que le modèle attend
+#     # Préparer les données pour la prédiction
+#     features = [[
+#         data['property_type'],
+#         data['room_type'],
+#         data['accommodates'],
+#         data['bathrooms'],
+#         data['bedrooms'],
+#         data['beds']
+#     ]]
+#     # Faire la prédiction
+#     prediction = model.predict(features)
+#     # Retourner la prédiction
+#     return jsonify({'predicted_price': prediction[0]})
 
 @app.get("/model", tags=["Models"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
 def get_model(prompt: str):
     try:
-        response = client.completions.create(
-            model="gpt-3.5-turbo-instruct",
-            prompt=prompt,
-            max_tokens=7,
-            temperature=0
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
+                {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
+            ]
         )
-        if response.status == 200:
-            model_output = response.choices[0].text
+
+        if completion.status == 200:
+            model_output = completion.choices[0].text
             return {"model_output": model_output}
         else:
-            raise HTTPException(status_code=response.status, detail=response.error.message)
+            raise HTTPException(status_code=completion.status, detail=completion.error.message)
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,13 +1,9 @@
 import os
-import pickle
-import tempfile
 import requests
 import streamlit as st
 import pandas as pd
 
 from api import train_model_endpoint, get_model, predict_endpoint
-
-has_data_clean = False
 
 def set_page_config():
     st.set_page_config(
@@ -66,35 +62,45 @@ def train_model():
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-def main():
-    set_page_config()
-    st.title("Airbnb App")
-    st.write("This is a simple app that uses the Airbnb API to search for listings in a given city.")
 
-    st.write('------------------------------------------------------------------------------------------------------------------')
-
+def home_page():
     data_csv = load_data("data.csv")
     display_data(data_csv, "Airbnb Data")
-
     try:
         data_clean_csv = load_data("data_clean.csv")
-
         if data_clean_csv is not None and not data_clean_csv.empty:
             display_data(data_clean_csv, "Clean Airbnb Data")
-            
             st.write('------------------------------------------------------------------------------------------------------------------')
-
             st.subheader("Train Model")
-
             train_model()
-               
-
 
            
         else:
             st.write("No data available.")
     except FileNotFoundError:
         st.write("The file 'data_clean.csv' was not found. Please execute the data cleaning script first.")
+
+
+def swagger_page():
+    st.write('------------------------------------------------------------------------------------------------------------------')
+    st.subheader("Swagger Documentation")
+    st.write("Swagger documentation:")
+    st.components.v1.iframe("http://localhost:8000/docs", height=1000, scrolling=True)
+
+
+def main():
+    set_page_config()
+    st.title("Airbnb App")
+    st.write("This is a app that predicts prices using the Airbnb API.")
+
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", ["Home", "Swagger Documentation"])
+
+    if selection == "Home":
+        home_page()
+    elif selection == "Swagger Documentation":
+        swagger_page()
+
 
 
 if __name__ == "__main__":
