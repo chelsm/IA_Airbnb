@@ -64,6 +64,11 @@ class PredictionData(BaseModel):
     bedrooms: int
     beds: int
 
+@app.get("/", tags=["Home"])
+def read_root():
+    return {"message": "Welcome to the Airbnb Price Prediction API!"}
+
+
 @app.post("/training", tags=["Training"], summary="Train the model", description="Endpoint to train a machine learning model.")
 def train_model_endpoint(file_path: str): 
     try:

@@ -59,8 +59,6 @@ def train_model_json():
     property_types_mapping = inverse_categorical("property_type")
     room_types_mapping = inverse_categorical("room_type")
 
-    print('property_types_mapping', property_types_mapping)
-
     property_types = list(property_types_mapping.values())
     room_types = list(room_types_mapping.values())
     max_bathrooms = int(data_df["bathrooms"].max())
@@ -88,13 +86,12 @@ def train_model_json():
     }
 
     
-    if st.button("Train Model"):
-        response = requests.post("http://localhost:8000/predict-json", json=data)
-        if response.status_code == 200:
-            st.success("Model trained successfully and saved.")
-            st.write("Predicted prices:", response.json()["predicted_prices"])
-        else:
-            st.error("An error occurred while training the model.")
+    response = requests.post("http://localhost:8000/predict-json", json=data)
+    if response.status_code == 200:
+        st.success("Model trained successfully and saved.")
+        st.write("Predicted prices:", response.json()["predicted_prices"])
+    else:
+        st.error("An error occurred while training the model.")
 
 
 def home_page():
