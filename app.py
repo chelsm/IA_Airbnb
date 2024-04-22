@@ -2,7 +2,7 @@ import os
 import requests
 import streamlit as st
 import pandas as pd
-
+from function import get_last_model
 
 def set_page_config():
     st.set_page_config(
@@ -19,6 +19,7 @@ def load_data_from_csv(file_path):
 @st.cache_data
 def load_data(file_path):
     return load_data_from_csv(file_path)
+
 
 def display_data(data, title):
     st.subheader(title)
@@ -37,17 +38,20 @@ def display_data(data, title):
             st.write(f"Descriptive statistics for {title}:")
             st.write(data.describe())
 
+
 def inverse_categorical(column):
     df = pd.read_csv("data.csv")
     original_values = df[column].unique()
     mapping = {str(i): value for i, value in enumerate(original_values)}
     return mapping
 
+
 def get_key_from_value(dictionary, value):
     for key, val in dictionary.items():
         if val == value:
             return key
     return None  
+
 
 def train_model_json():
     data_df = pd.read_csv("data_clean.csv")
@@ -104,6 +108,13 @@ def home_page():
             st.write("No data available.")
     except FileNotFoundError:
         st.write("The file 'data_clean.csv' was not found. Please execute the data cleaning script first.")
+
+    st.subheader("Download the last model:")
+    st.write("Click the button below to download the last model.")
+    model_path = get_last_model()
+    with open(model_path, 'rb') as model_file:
+        model_bytes = model_file.read()
+    st.download_button(label="Download model", data=model_bytes, file_name="model.pkl", mime="application/octet-stream")
 
 
 def swagger_page():

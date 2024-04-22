@@ -64,8 +64,7 @@ class PredictionData(BaseModel):
     bedrooms: int
     beds: int
 
-
-@app.post("/training", tags=["Training"], summary="Entraîner le modèle", description="Endpoint pour entraîner un modèle de machine learning.")
+@app.post("/training", tags=["Training"], summary="Train the model", description="Endpoint to train a machine learning model.")
 def train_model_endpoint(file_path: str): 
     try:
         df = pd.read_csv(file_path)
@@ -80,8 +79,7 @@ def train_model_endpoint(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.post("/predict", tags=["Predict"], summary="Faire une prédiction", description="Endpoint pour faire une prédiction à partir du modèle entraîné.")
+@app.post("/predict", tags=["Predict"], summary="Make a prediction", description="Endpoint to make a prediction using the trained model.")
 def predict_endpoint(file_path: str):
     try:
         df = pd.read_csv(file_path)
@@ -99,7 +97,7 @@ def predict_endpoint(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/predict-json", tags=["Predict"], summary="Faire une prédiction", description="Endpoint pour faire une prédiction à partir du modèle entraîné.")
+@app.post("/predict-json", tags=["Predict"], summary="Make a prediction", description="Endpoint to make a prediction using the trained model.")
 def predict_endpoint(data: PredictionData):
     try:
         df = pd.DataFrame([data.dict()])
@@ -113,7 +111,7 @@ def predict_endpoint(data: PredictionData):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/model", tags=["Models"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
+@app.get("/model", tags=["Models"], summary="Get an AI model", description="Endpoint to retrieve an AI model from the OpenAI API.")
 def get_model(prompt: str):
     try:
         completion = client.chat.completions.create(

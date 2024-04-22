@@ -17,7 +17,7 @@ def train_model(df):
 def get_last_model():
     trained_models_dir = './trained_models'
     if not os.path.exists(trained_models_dir):
-        raise FileNotFoundError("Le dossier trained_models n'existe pas.")
+        raise FileNotFoundError("The directory 'trained_models' does not exist.")
     
     model_files = os.listdir(trained_models_dir)
     
@@ -27,7 +27,7 @@ def get_last_model():
             pkl_files.append(file)
     
     if not pkl_files:
-        raise FileNotFoundError("Aucun fichier .pkl trouvé dans le dossier trained_models.")
+        raise FileNotFoundError("No .pkl files found in the trained_models directory.")
     
     pkl_files.sort(key=lambda x: os.path.getmtime(os.path.join(trained_models_dir, x)), reverse=True)
     
