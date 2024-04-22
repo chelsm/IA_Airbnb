@@ -3,7 +3,6 @@ import requests
 import streamlit as st
 import pandas as pd
 
-from api import train_model_endpoint, get_model, predict_endpoint
 
 def set_page_config():
     st.set_page_config(
@@ -62,6 +61,51 @@ def train_model():
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
+def get_key_from_value(dictionary, value):
+    for key, val in dictionary.items():
+        if val == value:
+            return key
+    return None  
+
+def train_model_json():
+    st.write("Train model using JSON data")
+    data_df = pd.read_csv("data.csv")
+    
+    property_types_mapping = inverse_categorical(data_df, "property_type")
+    room_types_mapping = inverse_categorical(data_df, "room_type")
+
+    property_types = list(property_types_mapping.values())
+    room_types = list(room_types_mapping.values())
+    max_bathrooms = int(data_df["bathrooms"].max())
+    max_accommodates = int(data_df["accommodates"].max())
+    max_bedrooms = int(data_df["bedrooms"].max())
+    max_beds = int(data_df["beds"].max())
+
+    property_type = st.selectbox("Property type", property_types)
+    room_type = st.selectbox("Room type", room_types)
+    bathrooms = st.number_input("Number of bathrooms", min_value=1, max_value=max_bathrooms, step=1)
+    accommodates = st.number_input("Number of accommodates", min_value=1, max_value=max_accommodates, step=1)
+    bedrooms = st.number_input("Number of bedrooms", min_value=1, max_value=max_bedrooms, step=1)
+    beds = st.number_input("Number of beds", min_value=1, max_value=max_beds, step=1)
+
+    property_type_key = get_key_from_value(property_types_mapping, property_type)
+    room_type_key = get_key_from_value(room_types_mapping, room_type)
+
+    data = {
+        "property_type": property_type_key,
+        "room_type": room_type_key,
+        "bathrooms": bathrooms,
+        "accommodates": accommodates,
+        "bedrooms": bedrooms,
+        "beds": beds,
+    }
+
+    response = requests.post("http://localhost:8000/predict-json", json=data)
+    if response.status_code == 200:
+        st.success("Model trained successfully and saved.")
+    else:
+        st.error("An error occurred while training the model.")
+
 
 def home_page():
     data_csv = load_data("data.csv")
@@ -72,7 +116,8 @@ def home_page():
             display_data(data_clean_csv, "Clean Airbnb Data")
             st.write('------------------------------------------------------------------------------------------------------------------')
             st.subheader("Train Model")
-            train_model()
+            # train_model()
+            train_model_json()
 
            
         else:

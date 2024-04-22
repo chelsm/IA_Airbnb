@@ -99,22 +99,19 @@ def predict_endpoint(file_path: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     data = request.json  # Attend les données JSON avec les mêmes caractéristiques que le modèle attend
-#     # Préparer les données pour la prédiction
-#     features = [[
-#         data['property_type'],
-#         data['room_type'],
-#         data['accommodates'],
-#         data['bathrooms'],
-#         data['bedrooms'],
-#         data['beds']
-#     ]]
-#     # Faire la prédiction
-#     prediction = model.predict(features)
-#     # Retourner la prédiction
-#     return jsonify({'predicted_price': prediction[0]})
+@app.post("/predict-json", tags=["Predict"], summary="Faire une prédiction", description="Endpoint pour faire une prédiction à partir du modèle entraîné.")
+def predict_endpoint(data: PredictionData):
+    try:
+        df = pd.DataFrame([data.dict()])
+        model_path = get_last_model()
+        with open(model_path, 'rb') as model_file:
+            model = pickle.load(model_file)
+
+        predictions = predict(model, df)
+        
+        return {"predicted_prices": predictions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/model", tags=["Models"], summary="Obtenir un modèle d'IA", description="Endpoint pour obtenir un modèle d'IA de l'API OpenAI.")
 def get_model(prompt: str):
